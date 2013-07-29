@@ -1,0 +1,144 @@
+﻿<!DOCTYPE html>
+<html>
+  <head>
+    <title>FileWriter Example</title>
+
+    <script src="/js/cordova.js"></script>
+      <script src="/js/jquery-2.0.2.js"></script>
+    <script type="text/javascript" charset="utf-8">
+
+        document.addEventListener("deviceready", onDeviceReady, false);
+        function onDeviceReady() {
+
+            $("#downloadBtn").on("click", function () {
+                
+                var url = $("#urlInput").val();
+
+                if (url == "") {
+                    return;
+                }
+                alert("start download");
+                downloadFile(url);
+            });
+
+            
+        }
+
+        /*
+        // Wait for device API libraries to load
+        //
+        document.addEventListener("deviceready", onDeviceReady, false);
+
+        // device APIs are available
+        //
+        function onDeviceReady() {
+            window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, gotFS, fail);
+            
+        }
+
+        function gotFS(fileSystem) {
+            console.log("gotFS");
+            console.log(JSON.stringify(fileSystem.root));
+            fileSystem.root.getFile("rehan123.txt", { create: true, exclusive: false }, gotFileEntry, fail);
+        }
+
+        function gotFileEntry(fileEntry) {
+            fileEntry.createWriter(gotFileWriter, fail);
+        }
+
+        function gotFileWriter(writer) {
+            writer.onwriteend = function (evt) {
+                console.log("contents of file now 'some sample text'");
+                writer.truncate(11);
+                writer.onwriteend = function (evt) {
+                    console.log("contents of file now 'some sample'");
+                    writer.seek(4);
+                    writer.write(" different text");
+                    writer.onwriteend = function (evt) {
+                        console.log("contents of file now 'some different text'");
+                    }
+                };
+            };
+            writer.write("some sample text");
+        }
+
+        function fail(error) {
+            console.log(error.code);
+        }
+        */
+
+
+        // Creates a file if it doesn't exist.
+        // Throw an error if a file already exists with the same name.
+
+        
+
+    </script>
+  </head>
+  <body>
+    <p>
+        DOWNLOAD FILE...<br />
+        <span id="Span1"></span>
+    </p>
+      <div id="ready"></div>
+      <input type="url" id="urlInput" placeholder="File Url" /><button id="downloadBtn">Download</button>
+
+</body>
+
+
+    <script>
+        
+        function downloadFile(url) {
+            window.requestFileSystem(
+                LocalFileSystem.PERSISTENT, 0,
+                function onFileSystemSuccess(fileSystem) {
+                    fileSystem.root.getFile(
+                        "dummy.html", { create: true, exclusive: false },
+                        function gotFileEntry(fileEntry) {
+                            var sPath = fileEntry.fullPath.replace("dummy.html", "");
+                            var fileTransfer = new FileTransfer();
+                            fileEntry.remove();
+
+                            var ext = url.split(".");
+                                             
+                            fileTransfer.download(
+                                url,
+                                sPath + Date.now() + "." + ext[ext.length - 1],
+                                function (theFile) {
+                                    console.log("download complete: " + theFile.toURI());
+                                    showLink(theFile.toURI());
+                                },
+                                function (error) {
+                                    console.log("download error source " + error.source);
+                                    console.log("download error target " + error.target);
+                                    console.log("upload error code: " + error.code);
+                                }
+                            );
+                        },
+                        fail);
+                },
+                fail);
+
+        }
+
+        function showLink(url) {
+            alert(url);
+            var divEl = document.getElementById("ready");
+            var aElem = document.createElement("a");
+            aElem.setAttribute("target", "_blank");
+            aElem.setAttribute("href", url);
+            aElem.appendChild(document.createTextNode("Ready! Click To Open."))
+            divEl.appendChild(aElem);
+
+        }
+
+
+        function fail(evt) {
+            console.log(evt.target.error.code);
+        }
+
+
+
+
+    </script>
+</html>

@@ -1,0 +1,110 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>App10</title>
+
+    <!-- WinJS references -->
+    <link href="//Microsoft.WinJS.1.0/css/ui-dark.css" rel="stylesheet" />
+    <script src="//Microsoft.WinJS.1.0/js/base.js"></script>
+    <script src="//Microsoft.WinJS.1.0/js/ui.js"></script>
+
+    <link href="/css/bootstrap.css" rel="stylesheet" />
+    <link href="/css/bootstrap-responsive.css" rel="stylesheet" />
+    <link href="/css/default.css" rel="stylesheet" />
+
+    <script src="/js/cordova.js"></script>
+    <script src="/js/jquery-2.0.2.js"></script>
+    <script src="/js/d3.v3.js"></script>
+
+    <!-- App10 references -->
+
+    <script src="/js/default.js"></script>
+</head>
+<body>
+    <p>Image Downloader</p>
+    <div id="dirEntries">
+
+    </div>
+    <div id="fileInfo">
+
+    </div>
+    <img />
+    <canvas id="canvas"></canvas>
+
+    <script type="text/javascript">
+
+        console.log("Subscribing...");
+        document.addEventListener("deviceready", onDeviceReady);
+
+        function onDeviceReady() {
+
+
+            window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, gotFS, fail);
+
+
+        }
+
+        function getBase64FromImageUrl(URL , callback) {
+            var img = new Image();
+            img.src = URL;
+            img.onload = function () {
+
+
+                var canvas = document.createElement("canvas");
+                canvas.width = this.width;
+                canvas.height = this.height;
+
+                var ctx = canvas.getContext("2d");
+                ctx.drawImage(this, 0, 0);
+
+
+                var dataURL = canvas.toDataURL("image/png");
+
+                var base64 = dataURL.replace(/^data:image\/(png|jpg);base64,/, "");
+                callback(base64);
+            }
+        }
+
+        function gotFS(fileSystem) {
+            console.log("gotFS");
+            console.log(JSON.stringify(fileSystem.root));
+            fileSystem.root.getFile("rehan123.jpg", { create: true, exclusive: false }, gotFileEntry, fail);
+        }
+
+        function gotFileEntry(fileEntry) {
+            fileEntry.createWriter(gotFileWriter, fail);
+        }
+
+        function gotFileWriter(writer) {
+
+            getBase64FromImageUrl("http://localhost:7000/demo/logo.png", function (data) {
+                console.log(data);
+                $("img").attr("src", 'data:image/png;base64,'+data)
+                writer.onwriteend = function (evt) {
+                    console.log("contents of file now 'some sample text'");
+                    writer.truncate(11);
+                    writer.onwriteend = function (evt) {
+                        console.log("contents of file now 'some sample'");
+                        writer.seek(4);
+                        writer.write(data);
+                        writer.onwriteend = function (evt) {
+                            console.log("contents of file now 'some different text'");
+                        }
+                    };
+                };
+                writer.write("some sample text");
+            })
+
+
+        }
+
+        function fail(error) {
+            console.log(error.code);
+        }
+
+    </script>
+
+
+</body>
+</html>
